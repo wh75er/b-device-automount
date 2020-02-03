@@ -5,4 +5,6 @@
 #include <string.h>
 #include <stdio.h>
 
+void get_bd_fs_type(char* path, char* type);
+
 #endif
