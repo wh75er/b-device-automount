@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-c -Wall
+CFLAGS=-c -Wall -lblkid
 SOURCES=$(wildcard *.c)
 
 abmount.out: $(SOURCES:.c=.o)
