@@ -10,6 +10,7 @@
 #include <string.h>
 
 #include "fs_determ.h"
+#include "fs_mount.h"
 
 static void handle_events(int fd, int wd, char* path);
 int main();

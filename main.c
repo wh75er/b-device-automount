@@ -52,22 +52,22 @@ handle_events(int fd, int wd, char* path)
             /* Print the name of the watched directory */
             /* Print the name of the file */
 
-            char *dev_path = NULL, *dev_type = NULL; 
+            char *dev_path = NULL, *fs_type = NULL; 
 
             if (wd == event->wd && event->len) {
                 size_t path_len = strlen(path);
                 size_t name_len = (size_t)event->len;
                 dev_path = malloc(path_len + name_len + 2);
 
-                dev_type = malloc(50);
+                fs_type = malloc(50);
 
-                if(!dev_path || !dev_type) {
+                if(!dev_path || !fs_type) {
                     perror("Memory allocating error");
                     exit(EXIT_FAILURE);
                 }
 
                 strcpy(dev_path, "");
-                strcpy(dev_type, "");
+                strcpy(fs_type, "");
 
                 printf("%s/", path);
                 printf("%s", event->name);
@@ -77,12 +77,23 @@ handle_events(int fd, int wd, char* path)
 
                 printf("(%s)", dev_path);
 
-                get_bd_fs_type(dev_path, dev_type);
-                if(strcmp(dev_type, ""))
-                    printf("FILE: %s has type %s\n", dev_path, dev_type);
+                get_bd_fs_type(dev_path, fs_type);
+                if(strcmp(fs_type, "")) {
+                    printf("FILE: %s has type %s\n", dev_path, fs_type);
+
+                    char* mnt_path = malloc(50);
+                    if(!dev_path || !fs_type) {
+                        perror("Memory allocating error");
+                        exit(EXIT_FAILURE);
+                    }
+                    strcpy(mnt_path, "");
+                    strcat(mnt_path, "/mnt/");
+                    strcat(mnt_path, event->name);
+                    mount_dev(mnt_path, dev_path, fs_type, MS_NOATIME, NULL);
+                }
 
                 free(dev_path);
-                free(dev_type);
+                free(fs_type);
             }
 
             /* Print type of filesystem object */
