@@ -1,9 +1,4 @@
-#include <errno.h>
-#include <poll.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/inotify.h>
-#include <unistd.h>
+#include "main.h"
 
 /* Read all available inotify events from the file descriptor 'fd'.
    wd is watch descriptor for the directory. */
@@ -20,7 +15,6 @@ handle_events(int fd, int wd, char* path)
     char buf[4096]
         __attribute__ ((aligned(__alignof__(struct inotify_event))));
     const struct inotify_event *event;
-    int i;
     ssize_t len;
     char *ptr;
 
@@ -56,31 +50,59 @@ handle_events(int fd, int wd, char* path)
                 printf("IN_CREATE: ");
 
             /* Print the name of the watched directory */
-
-            if (wd == event->wd)
-                printf("%s/", path);
-
             /* Print the name of the file */
 
-            if (event->len)
+            char *dev_path = NULL, *dev_type = NULL; 
+
+            if (wd == event->wd && event->len) {
+                size_t path_len = strlen(path);
+                size_t name_len = (size_t)event->len;
+                dev_path = malloc(path_len + name_len + 2);
+
+                dev_type = malloc(50);
+
+                if(!dev_path || !dev_type) {
+                    perror("Memory allocating error");
+                    exit(EXIT_FAILURE);
+                }
+
+                strcpy(dev_path, "");
+                strcpy(dev_type, "");
+
+                printf("%s/", path);
                 printf("%s", event->name);
+                strcat(dev_path, path); 
+                strcat(dev_path, "/");
+                strcat(dev_path, event->name); 
+
+                printf("(%s)", dev_path);
+
+                get_bd_fs_type(dev_path, dev_type);
+                if(strcmp(dev_type, ""))
+                    printf("FILE: %s has type %s\n", dev_path, dev_type);
+
+                free(dev_path);
+                free(dev_type);
+            }
 
             /* Print type of filesystem object */
 
-            if (event->mask & IN_ISDIR)
+            /*if (event->mask & IN_ISDIR)
                 printf(" [directory]\n");
             else
                 printf(" [file]\n");
+
+            */
         }
     }
 }
 
-int
-main(int argc, char* argv[])
+int 
+main()
 {
     char* path = "/dev";
     char buf;
-    int fd, i, poll_num;
+    int fd, poll_num;
     int wd;
     nfds_t nfds;
     struct pollfd fds[2];

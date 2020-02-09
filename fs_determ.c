@@ -19,6 +19,7 @@ void get_bd_fs_type(char* path, char* type)
     blkid_free_probe(pr);
 }
 
+/*
 int main()
 {
     char* path = "/dev/sdc1";
@@ -28,3 +29,4 @@ int main()
 
     printf("FILE: %s has type %s\n", path, type);
 }
+*/
