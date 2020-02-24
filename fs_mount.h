@@ -10,6 +10,7 @@
 #include <errno.h>
 
 #include <stdio.h>
+#include <syslog.h>
 
 int init_dir(const char* path);
 void mount_dev(const char* mntpath, const char* devpath, const char* fstype, unsigned long mountflags, const void *data);

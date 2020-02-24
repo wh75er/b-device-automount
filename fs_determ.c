@@ -5,7 +5,7 @@ void get_bd_fs_type(char* path, char* type)
     blkid_probe pr;
     pr = blkid_new_probe_from_filename(path);
     if(!pr) {
-        printf("Err: Failed to open device\n");
+        syslog(LOG_ERR, "Err: Failed to open device\n");
         return;
     }
 
