@@ -112,13 +112,10 @@ int
 main()
 {
     char* path = "/dev";
-    char buf;
     int fd, poll_num;
     int wd;
     nfds_t nfds;
-    struct pollfd fds[2];
-
-    printf("Press ENTER key to terminate.\n");
+    struct pollfd fds[1];
 
     /* Create the file descriptor for accessing the inotify API */
 
@@ -143,15 +140,10 @@ main()
 
     nfds = 2;
 
-    /* Console input */
-
-    fds[0].fd = STDIN_FILENO;
-    fds[0].events = POLLIN;
-
     /* Inotify input */
 
-    fds[1].fd = fd;
-    fds[1].events = POLLIN;
+    fds[0].fd = fd;
+    fds[0].events = POLLIN;
 
     /* Wait for events and/or terminal input */
 
@@ -168,15 +160,6 @@ main()
         if (poll_num > 0) {
 
             if (fds[0].revents & POLLIN) {
-
-                /* Console input is available. Empty stdin and quit */
-
-                while (read(STDIN_FILENO, &buf, 1) > 0 && buf != '\n')
-                    continue;
-                break;
-            }
-
-            if (fds[1].revents & POLLIN) {
 
                 /* Inotify events are available */
 
