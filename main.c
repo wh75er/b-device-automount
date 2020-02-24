@@ -26,7 +26,7 @@ handle_events(int fd, int wd, char* path)
 
         len = read(fd, buf, sizeof buf);
         if (len == -1 && errno != EAGAIN) {
-            perror("read");
+            syslog(LOG_ERR, "Read failure.\n");
             exit(EXIT_FAILURE);
         }
 
@@ -44,10 +44,6 @@ handle_events(int fd, int wd, char* path)
 
             event = (const struct inotify_event *) ptr;
 
-            /* Print event type */
-
-            if (event->mask & IN_CREATE )
-                printf("IN_CREATE: ");
 
             /* Print the name of the watched directory */
             /* Print the name of the file */
@@ -62,7 +58,7 @@ handle_events(int fd, int wd, char* path)
                 fs_type = malloc(50);
 
                 if(!dev_path || !fs_type) {
-                    perror("Memory allocating error");
+                    syslog(LOG_ERR, "Memory allocating error.\n");
                     exit(EXIT_FAILURE);
                 }
 
@@ -77,13 +73,20 @@ handle_events(int fd, int wd, char* path)
 
                 printf("(%s)", dev_path);
 
+                /* Print event type */
+
+                if (event->mask & IN_CREATE )
+                    syslog(LOG_INFO, "Event IN_CREATE: %s/%s(%s)", path, event->name,
+                                                                    dev_path);
+
                 get_bd_fs_type(dev_path, fs_type);
+
                 if(strcmp(fs_type, "")) {
-                    printf("FILE: %s has type %s\n", dev_path, fs_type);
+                    syslog(LOG_INFO, "FILE: %s has type %s\n", dev_path, fs_type);
 
                     char* mnt_path = malloc(50);
                     if(!dev_path || !fs_type) {
-                        perror("Memory allocating error");
+                        syslog(LOG_ERR, "Memory allocating error.\n");
                         exit(EXIT_FAILURE);
                     }
                     strcpy(mnt_path, "");
@@ -118,7 +121,7 @@ void redirect_fds()
      if (open("/dev/null", O_RDWR) != 0)
      {
        syslog(LOG_ERR, "Unable to open /dev/null: %s", strerror(errno));
-       exit(1);
+       exit(EXIT_FAILURE);
      }
 
     dup(0);
@@ -154,7 +157,7 @@ int daemonize()
 {
     int status = 0;
 
-    openlog("daemonize", LOG_PID, LOG_DAEMON);
+    openlog("automount.daemon", LOG_PID, LOG_DAEMON);
 
     if((status = do_fork()) < 0)
         ;
@@ -210,16 +213,16 @@ main()
 
     int status = daemonize();
     if(status != 0)
-        exit(0);
+        exit(EXIT_FAILURE);
 
     /* Wait for events */
-    printf("Listening for events.\n");
+    syslog(LOG_INFO, "Listening for events.\n");
     while (1) {
         poll_num = poll(fds, nfds, -1);
         if (poll_num == -1) {
             if (errno == EINTR)
                 continue;
-            perror("poll");
+            syslog(LOG_ERR, "Polling error!\n");
             exit(EXIT_FAILURE);
         }
 
@@ -234,7 +237,7 @@ main()
         }
     }
 
-    printf("Listening for events stopped.\n");
+    syslog(LOG_INFO, "Listening for events stopped.\n");
 
     /* Close inotify file descriptor */
 
