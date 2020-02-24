@@ -108,6 +108,68 @@ handle_events(int fd, int wd, char* path)
     }
 }
 
+/* redirect STDIN, STDOUT, STDERR to /dev/null */
+
+void redirect_fds()
+{
+    for(int i = 0; i < 3; i++)
+        close(i);
+
+     if (open("/dev/null", O_RDWR) != 0)
+     {
+       syslog(LOG_ERR, "Unable to open /dev/null: %s", strerror(errno));
+       exit(1);
+     }
+
+    dup(0);
+    dup(0);
+}
+
+/* make fork operation*/
+
+int do_fork(void)
+{
+    int status = 0;
+
+    switch(fork())
+    {
+        case 0:
+            /* This is the child that will become the daemon. */
+            break;
+
+        case -1:
+            /* Fork failure. */
+            status = -1;
+            break;
+
+        default:
+            /* Parent: Exit. */
+            exit(0);
+    }
+
+    return status;
+}
+
+int daemonize()
+{
+    int status = 0;
+
+    openlog("daemonize", LOG_PID, LOG_DAEMON);
+
+    if((status = do_fork()) < 0)
+        ;
+    else if(setsid() < 0)
+        status = -1;
+    else {
+        umask(0);
+        if((chdir("/")) < 0)
+            exit(EXIT_FAILURE);
+        redirect_fds();
+    }
+
+    return status;
+}
+
 int 
 main()
 {
@@ -145,8 +207,12 @@ main()
     fds[0].fd = fd;
     fds[0].events = POLLIN;
 
-    /* Wait for events and/or terminal input */
 
+    int status = daemonize();
+    if(status != 0)
+        exit(0);
+
+    /* Wait for events */
     printf("Listening for events.\n");
     while (1) {
         poll_num = poll(fds, nfds, -1);

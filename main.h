@@ -8,6 +8,9 @@
 #include <sys/inotify.h>
 #include <unistd.h>
 #include <string.h>
+#include <syslog.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 
 #include "fs_determ.h"
 #include "fs_mount.h"
