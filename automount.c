@@ -59,14 +59,21 @@ static struct file_operations fileops =
   .read = seq_read,
 };
 
-static int i = 0;
-
 static int __init mod_init(void) {
   struct proc_dir_entry *Mount_Info_File;
   Mount_Info_File = proc_create(PROCFS_NAME, 0666, NULL, &fileops);
   if(!Mount_Info_File)
     return -1;
-  printk(KERN_INFO "+Module was started with i equals %d!\n", i);
+  printk(KERN_INFO "+Module was loaded\n");
+
+  char* argv[] = {"/home/wh75er/project/b-device-automount/user-space/abmount.out", NULL};
+  static char* envp[] = {
+      "HOME=/",
+      "TERM=linux",
+      "PATH=/sbin:/bin:/usr/sbin:/usr/bin", NULL };
+
+  call_usermodehelper(argv[0], argv, envp, UMH_NO_WAIT);
+
   return 0;
 }
 

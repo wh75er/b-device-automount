@@ -1,7 +1,13 @@
-obj-m += main.o
+CC=gcc
+CFLAGS=-c -Wall
+LIBS=-lblkid
+SOURCES=$(wildcard *.c)
 
-all:
-	make -C /lib/modules/$(shell uname -r)/build M=$(shell pwd) modules
+abmount.out: $(SOURCES:.c=.o)
+	$(CC) $^ $(LIBS) -o $@
+
+%.o: %.c
+	$(CC) $(CFLAGS) $^ -o $@
 
 clean:
-	make -C /lib/modules/$(shell uname -r)/build M=$(shell pwd) clean
+	rm *.o abmount.out

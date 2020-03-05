@@ -1,18 +1,16 @@
 #ifndef __MAIN_C__
 #define __MAIN_C__
 
-#include <linux/errno.h>
-#include <linux/poll.h>
-#include <linux/inotify.h>
-#include <linux/unistd.h>
-#include <linux/string.h>
-
-#include <linux/module.h>
-#include <linux/kernel.h>
-#include <linux/proc_fs.h>
+#include <errno.h>
+#include <poll.h>
+#include <sys/inotify.h>
+#include <unistd.h>
+#include <string.h>
 
 #include "fs_determ.h"
 #include "fs_mount.h"
+
+#define PROCFS_NAME "/proc/mount_info"
 
 static void handle_events(int fd, int wd, char* path);
 int main();

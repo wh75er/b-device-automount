@@ -3,6 +3,25 @@
 /* Read all available inotify events from the file descriptor 'fd'.
    wd is watch descriptor for the directory. */
 
+void write_to_file(char* dev_path, char* fs_type)
+{
+  char dst[200];
+  strcpy(dst, "");
+  strcat(dst, dev_path);
+  strcat(dst, " ");
+  strcat(dst, fs_type);
+  strcat(dst, "\n");
+  printf("STRING IS %s", dst);
+
+  FILE *fp;
+  fp = fopen(PROCFS_NAME, "w");
+  if(fp) {
+    fputs(dst, fp);
+    fclose(fp);
+  } else 
+    printf("Err: failed to open file <%s>\n", PROCFS_NAME);
+}
+
 static void
 handle_events(int fd, int wd, char* path)
 {
@@ -75,7 +94,7 @@ handle_events(int fd, int wd, char* path)
                 strcat(dev_path, "/");
                 strcat(dev_path, event->name); 
 
-                printf("(%s)", dev_path);
+                printf("(%s)\n", dev_path);
 
                 get_bd_fs_type(dev_path, fs_type);
                 if(strcmp(fs_type, "")) {
@@ -89,7 +108,8 @@ handle_events(int fd, int wd, char* path)
                     strcpy(mnt_path, "");
                     strcat(mnt_path, "/mnt/");
                     strcat(mnt_path, event->name);
-                    mount_dev(mnt_path, dev_path, fs_type, MS_NOATIME, NULL);
+                    write_to_file(dev_path, fs_type);
+                    //mount_dev(mnt_path, dev_path, fs_type, MS_NOATIME, NULL);
                 }
 
                 free(dev_path);
