@@ -66,7 +66,7 @@ static int __init mod_init(void) {
     return -1;
   printk(KERN_INFO "+Module was loaded\n");
 
-  char* argv[] = {"/home/wh75er/project/b-device-automount/user-space/abmount.out", NULL};
+  char* argv[] = {"/home/wh75er/projects/b-device-automount/user-space/abmount.out", NULL};
   static char* envp[] = {
       "HOME=/",
       "TERM=linux",
