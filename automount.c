@@ -15,6 +15,8 @@ MODULE_VERSION("0.1");
 MODULE_LICENSE("GPL");
 
 static char *str = NULL;
+static char dev_name[100];
+static char dev_fs[100];
 
 static int fileproc_show(struct seq_file *m, void *v)
 {
@@ -42,6 +44,10 @@ static ssize_t procfile_write(struct file *file,
   }
   kfree(str);
   str=tmp;
+
+  sscanf(str, "%s %s\n", dev_name, dev_fs);
+  printk(KERN_INFO "Filename: %s, FS: %s\n", dev_name, dev_fs);
+
   return count;
 }
 
