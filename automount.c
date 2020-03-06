@@ -12,7 +12,8 @@
 
 #define PROCFS_MAX_SIZE 1024
 #define PROCFS_NAME "mount_info"
-#define USERSPACE_APP "/home/wh75er/projects/b-device-automount/user-space/abmount.out"
+#define USERSPACE_MONITORING "/home/wh75er/projects/b-device-automount/user-space/monitoring/monitoring.out"
+#define USERSPACE_MOUNT "/home/wh75er/projects/b-device-automount/user-space/mount/mount.out"
 
 
 MODULE_AUTHOR("wh75er");
@@ -21,25 +22,13 @@ MODULE_LICENSE("GPL");
 
 static char *str = NULL;
 static char dev_path[100];
+static char dev_name[100];
 static char dev_fs[100];
 
-static int mount_dev(const char* mntpath, const char* devpath, const char* fstype, unsigned long mountflags, void *data)
-{
-    long dir;
-    dir = ksys_mkdir(mntpath, 0755);
-    if(dir < 0) {
-        printk(KERN_ALERT "Failed to create mount point!\n");
-        return -1;
-    }
-
-    int mnt = do_mount(devpath, mntpath, fstype, mountflags, data);
-    if(!mnt)
-        printk(KERN_INFO "Device <%s> was mounted to <%s>\n", devpath, mntpath);
-    else
-        printk(KERN_INFO "Error occurred during mount!\n");
-
-    return 0;
-}
+static char* envp[] = {
+    "HOME=/",
+    "TERM=linux",
+    "PATH=/sbin:/bin:/usr/sbin:/usr/bin", NULL };
 
 static int fileproc_show(struct seq_file *m, void *v)
 {
@@ -68,15 +57,18 @@ static ssize_t procfile_write(struct file *file,
   kfree(str);
   str=tmp;
 
-  sscanf(str, "%s %s\n", dev_path, dev_fs);
-  printk(KERN_INFO "Detected Filename: %s with FS: %s\n", dev_path, dev_fs);
+  sscanf(str, "%s %s %s\n", dev_path, dev_name, dev_fs);
+  printk(KERN_INFO "Detected Path: %s Filename: %s with FS: %s\n", dev_path, dev_name, dev_fs);
 
   char mnt_path[200];
   strcpy(mnt_path, "");
   strcat(mnt_path, "/mnt/");
-  strcat(mnt_path, dev_path);
+  strcat(mnt_path, dev_name);
 
-  mount_dev(mnt_path, dev_path, dev_fs, MS_NOATIME, NULL);
+  printk(KERN_INFO "mount_path: %s dev_path: %s with FS: %s\n", mnt_path, dev_path, dev_fs);
+
+  char* argv[] = {USERSPACE_MOUNT, mnt_path, dev_path, dev_fs, NULL};
+  call_usermodehelper(argv[0], argv, envp, UMH_WAIT_PROC);
 
   return count;
 }
@@ -96,12 +88,7 @@ static int __init mod_init(void) {
     return -1;
   printk(KERN_INFO "+Module was loaded\n");
 
-  char* argv[] = {USERSPACE_APP, NULL};
-  static char* envp[] = {
-      "HOME=/",
-      "TERM=linux",
-      "PATH=/sbin:/bin:/usr/sbin:/usr/bin", NULL };
-
+  char* argv[] = {USERSPACE_MONITORING, NULL};
   call_usermodehelper(argv[0], argv, envp, UMH_NO_WAIT);
 
   return 0;

@@ -3,11 +3,13 @@
 /* Read all available inotify events from the file descriptor 'fd'.
    wd is watch descriptor for the directory. */
 
-void write_to_file(char* dev_path, char* fs_type)
+void write_to_file(char* dev_path, const char* dev_name, char* fs_type)
 {
   char dst[200];
   strcpy(dst, "");
   strcat(dst, dev_path);
+  strcat(dst, " ");
+  strcat(dst, dev_name);
   strcat(dst, " ");
   strcat(dst, fs_type);
   strcat(dst, "\n");
@@ -100,15 +102,15 @@ handle_events(int fd, int wd, char* path)
                 if(strcmp(fs_type, "")) {
                     printf("FILE: %s has type %s\n", dev_path, fs_type);
 
-                    char* mnt_path = malloc(50);
+                    //char* mnt_path = malloc(50);
                     if(!dev_path || !fs_type) {
                         perror("Memory allocating error");
                         exit(EXIT_FAILURE);
                     }
-                    strcpy(mnt_path, "");
-                    strcat(mnt_path, "/mnt/");
-                    strcat(mnt_path, event->name);
-                    write_to_file(dev_path, fs_type);
+                    //strcpy(mnt_path, "");
+                    //strcat(mnt_path, "/mnt/");
+                    //strcat(mnt_path, event->name);
+                    write_to_file(dev_path, event->name, fs_type);
                     //mount_dev(mnt_path, dev_path, fs_type, MS_NOATIME, NULL);
                 }
 
