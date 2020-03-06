@@ -2,21 +2,44 @@
 
 #include <linux/module.h>
 #include <linux/kernel.h>
+#include <linux/fs.h>
 #include <linux/proc_fs.h>
 #include <linux/uaccess.h>
 #include <linux/seq_file.h>
 #include <linux/slab.h>
+#include <linux/types.h>
+#include <linux/errno.h>
 
 #define PROCFS_MAX_SIZE 1024
 #define PROCFS_NAME "mount_info"
+#define USERSPACE_APP "/home/wh75er/projects/b-device-automount/user-space/abmount.out"
+
 
 MODULE_AUTHOR("wh75er");
 MODULE_VERSION("0.1");
 MODULE_LICENSE("GPL");
 
 static char *str = NULL;
-static char dev_name[100];
+static char dev_path[100];
 static char dev_fs[100];
+
+static int mount_dev(const char* mntpath, const char* devpath, const char* fstype, unsigned long mountflags, void *data)
+{
+    long dir;
+    dir = ksys_mkdir(mntpath, 0755);
+    if(dir < 0) {
+        printk(KERN_ALERT "Failed to create mount point!\n");
+        return -1;
+    }
+
+    int mnt = do_mount(devpath, mntpath, fstype, mountflags, data);
+    if(!mnt)
+        printk(KERN_INFO "Device <%s> was mounted to <%s>\n", devpath, mntpath);
+    else
+        printk(KERN_INFO "Error occurred during mount!\n");
+
+    return 0;
+}
 
 static int fileproc_show(struct seq_file *m, void *v)
 {
@@ -45,8 +68,15 @@ static ssize_t procfile_write(struct file *file,
   kfree(str);
   str=tmp;
 
-  sscanf(str, "%s %s\n", dev_name, dev_fs);
-  printk(KERN_INFO "Filename: %s, FS: %s\n", dev_name, dev_fs);
+  sscanf(str, "%s %s\n", dev_path, dev_fs);
+  printk(KERN_INFO "Detected Filename: %s with FS: %s\n", dev_path, dev_fs);
+
+  char mnt_path[200];
+  strcpy(mnt_path, "");
+  strcat(mnt_path, "/mnt/");
+  strcat(mnt_path, dev_path);
+
+  mount_dev(mnt_path, dev_path, dev_fs, MS_NOATIME, NULL);
 
   return count;
 }
@@ -66,7 +96,7 @@ static int __init mod_init(void) {
     return -1;
   printk(KERN_INFO "+Module was loaded\n");
 
-  char* argv[] = {"/home/wh75er/projects/b-device-automount/user-space/abmount.out", NULL};
+  char* argv[] = {USERSPACE_APP, NULL};
   static char* envp[] = {
       "HOME=/",
       "TERM=linux",
