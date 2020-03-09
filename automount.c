@@ -12,9 +12,8 @@
 
 #define PROCFS_MAX_SIZE 1024
 #define PROCFS_NAME "mount_info"
-#define USERSPACE_MONITORING "/home/wh75er/projects/b-device-automount/user-space/monitoring/monitoring.out"
-#define USERSPACE_MOUNT "/home/wh75er/projects/b-device-automount/user-space/mount/mount.out"
-
+//#define USERSPACE_MONITORING "/home/wh75er/projects/b-device-automount/user-space/monitoring/monitoring.out"
+//#define USERSPACE_MOUNT "/home/wh75er/projects/b-device-automount/user-space/mount/mount.out"
 
 MODULE_AUTHOR("wh75er");
 MODULE_VERSION("0.1");
@@ -64,8 +63,6 @@ static ssize_t procfile_write(struct file *file,
   strcpy(mnt_path, "");
   strcat(mnt_path, "/mnt/");
   strcat(mnt_path, dev_name);
-
-  printk(KERN_INFO "mount_path: %s dev_path: %s with FS: %s\n", mnt_path, dev_path, dev_fs);
 
   char* argv[] = {USERSPACE_MOUNT, mnt_path, dev_path, dev_fs, NULL};
   call_usermodehelper(argv[0], argv, envp, UMH_WAIT_PROC);
