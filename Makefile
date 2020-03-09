@@ -4,8 +4,6 @@ userspace-monitoring := $(mkfile_dir)user-space/monitoring/monitoring.out
 userspace-mount := $(mkfile_dir)user-space/mount/mount.out
 EXTRA_CFLAGS += -DUSERSPACE_MONITORING='"$(userspace-monitoring)"'
 EXTRA_CFLAGS += -DUSERSPACE_MOUNT='"$(userspace-mount)"'
-#EXTRA_CFLAGS += -DUSERSPACE_MONITORING='"Helloworld"'
-#EXTRA_CFLAGS += -DUSERSPACE_MOUNT='"Helloworld"'
 obj-m += automount.o
 
 all:
