@@ -12,8 +12,6 @@
 
 #define PROCFS_MAX_SIZE 1024
 #define PROCFS_NAME "mount_info"
-//#define USERSPACE_MONITORING "/home/wh75er/projects/b-device-automount/user-space/monitoring/monitoring.out"
-//#define USERSPACE_MOUNT "/home/wh75er/projects/b-device-automount/user-space/mount/mount.out"
 
 MODULE_AUTHOR("wh75er");
 MODULE_VERSION("0.1");

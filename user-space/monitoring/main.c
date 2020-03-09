@@ -1,8 +1,5 @@
 #include "main.h"
 
-/* Read all available inotify events from the file descriptor 'fd'.
-   wd is watch descriptor for the directory. */
-
 void write_to_file(char* dev_path, const char* dev_name, char* fs_type)
 {
   char dst[200];
