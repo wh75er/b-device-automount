@@ -13,7 +13,6 @@ void write_to_file(char* dev_path, const char* dev_name, char* fs_type)
   strcat(dst, " ");
   strcat(dst, fs_type);
   strcat(dst, "\n");
-  printf("STRING IS %s", dst);
 
   FILE *fp;
   fp = fopen(PROCFS_NAME, "w");
@@ -21,18 +20,12 @@ void write_to_file(char* dev_path, const char* dev_name, char* fs_type)
     fputs(dst, fp);
     fclose(fp);
   } else 
-    printf("Err: failed to open file <%s>\n", PROCFS_NAME);
+    syslog(LOG_ERR, "Err: failed to open file <%s>\n", PROCFS_NAME);
 }
 
 static void
 handle_events(int fd, int wd, char* path)
 {
-    /* Some systems cannot read integer variables if they are not
-       properly aligned. On other systems, incorrect alignment may
-       decrease performance. Hence, the buffer used for reading from
-       the inotify file descriptor should have the same alignment as
-       struct inotify_event. */
-
     char buf[4096]
         __attribute__ ((aligned(__alignof__(struct inotify_event))));
     const struct inotify_event *event;
@@ -68,7 +61,7 @@ handle_events(int fd, int wd, char* path)
             /* Print event type */
 
             if (event->mask & IN_CREATE )
-                printf("IN_CREATE: ");
+              syslog(LOG_INFO, "Event IN_CREATE: %s/%s(%s)", path, event->name, dev_path);
 
             /* Print the name of the watched directory */
             /* Print the name of the file */
@@ -90,42 +83,25 @@ handle_events(int fd, int wd, char* path)
                 strcpy(dev_path, "");
                 strcpy(fs_type, "");
 
-                printf("%s/", path);
-                printf("%s", event->name);
                 strcat(dev_path, path); 
                 strcat(dev_path, "/");
                 strcat(dev_path, event->name); 
 
-                printf("(%s)\n", dev_path);
-
                 get_bd_fs_type(dev_path, fs_type);
                 if(strcmp(fs_type, "")) {
-                    printf("FILE: %s has type %s\n", dev_path, fs_type);
+                    syslog(LOG_INFO, "FILE: %s has type %s\n", dev_path, fs_type);
 
-                    //char* mnt_path = malloc(50);
                     if(!dev_path || !fs_type) {
                         perror("Memory allocating error");
                         exit(EXIT_FAILURE);
                     }
-                    //strcpy(mnt_path, "");
-                    //strcat(mnt_path, "/mnt/");
-                    //strcat(mnt_path, event->name);
                     write_to_file(dev_path, event->name, fs_type);
-                    //mount_dev(mnt_path, dev_path, fs_type, MS_NOATIME, NULL);
                 }
 
                 free(dev_path);
                 free(fs_type);
             }
 
-            /* Print type of filesystem object */
-
-            /*if (event->mask & IN_ISDIR)
-                printf(" [directory]\n");
-            else
-                printf(" [file]\n");
-
-            */
         }
     }
 }
@@ -153,7 +129,6 @@ main()
     wd = inotify_add_watch(fd, path,
                                   IN_CREATE);
     if (wd == -1) {
-        fprintf(stderr, "Cannot watch '%s'\n", path);
         perror("inotify_add_watch");
         exit(EXIT_FAILURE);
     }
@@ -167,9 +142,9 @@ main()
     fds[0].fd = fd;
     fds[0].events = POLLIN;
 
-    /* Wait for events and/or terminal input */
+    openlog("automount.monitoring", LOG_PID, LOG_DAEMON);
 
-    printf("Listening for events.\n");
+    syslog(LOG_INFO, "Listening for events.\n");
     while (1) {
         poll_num = poll(fds, nfds, -1);
         if (poll_num == -1) {
@@ -190,7 +165,7 @@ main()
         }
     }
 
-    printf("Listening for events stopped.\n");
+    syslog(LOG_INFO, "Listening for events stopped.\n");
 
     /* Close inotify file descriptor */
 

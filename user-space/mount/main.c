@@ -29,16 +29,16 @@ void mount_dev(const char* mntpath, const char* devpath, const char* fstype, uns
 
   int mnt = mount(devpath, mntpath, fstype, mountflags, data);
   if(!mnt)
-    printf("Device <%s> was mounted to <%s>\n", devpath, mntpath);
+    syslog(LOG_INFO, "Device <%s> was mounted to <%s>\n", devpath, mntpath);
   else
-    printf("Error occurred during mount: %s\n", strerror(errno));
+    printf(LOG_ERR, "Error occurred during mount: %s\n", strerror(errno));
 }
 
 int main(int argc, char **argv)
 {
 
   if(argc < 4){
-    printf("Incorrect number of args: Usage <mnt point> <device> <fs>");
+    syslog(LOG_ERR, "Incorrect number of args: Usage <mnt point> <device> <fs>");
     exit(EXIT_FAILURE);
   }
   mount_dev(argv[1], argv[2], argv[3], MS_NOATIME, NULL);

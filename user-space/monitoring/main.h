@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include <syslog.h>
 
 #include "fs_determ.h"
 
