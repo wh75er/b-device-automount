@@ -88,10 +88,6 @@ handle_events(int fd, int wd, char* path)
                 if(strcmp(fs_type, "")) {
                     syslog(LOG_INFO, "FILE: %s has type %s\n", dev_path, fs_type);
 
-                    if(!dev_path || !fs_type) {
-                        perror("Memory allocating error");
-                        exit(EXIT_FAILURE);
-                    }
                     write_to_file(dev_path, event->name, fs_type);
                 }
 
