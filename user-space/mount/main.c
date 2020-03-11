@@ -31,7 +31,7 @@ void mount_dev(const char* mntpath, const char* devpath, const char* fstype, uns
   if(!mnt)
     syslog(LOG_INFO, "Device <%s> was mounted to <%s>\n", devpath, mntpath);
   else
-    printf(LOG_ERR, "Error occurred during mount: %s\n", strerror(errno));
+    syslog(LOG_ERR, "Error occurred during mount: %s\n", strerror(errno));
 }
 
 int main(int argc, char **argv)

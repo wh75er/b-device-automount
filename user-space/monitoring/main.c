@@ -58,7 +58,7 @@ handle_events(int fd, int wd, char* path)
             /* Print event type */
 
             if (event->mask & IN_CREATE )
-              syslog(LOG_INFO, "Event IN_CREATE: %s/%s(%s)", path, event->name, dev_path);
+              syslog(LOG_INFO, "Event IN_CREATE: %s/%s", path, event->name);
 
             /* Print the name of the watched directory */
             /* Print the name of the file */
